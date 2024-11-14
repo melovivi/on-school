@@ -7,8 +7,14 @@ import { validateJwt } from './http/middlewares/jwt-validate'
 import { globalErrorHandler } from './utils/global-error-handler'
 import { userRoutes } from './http/controllers/user/router'
 import { postRoutes } from './http/controllers/post/router'
+import fastifyCors from '@fastify/cors'
 
 export const app = fastify()
+
+app.register(fastifyCors, {
+  origin: '*', 
+  methods: ['GET', 'PUT', 'POST', 'DELETE'],
+})
 
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,

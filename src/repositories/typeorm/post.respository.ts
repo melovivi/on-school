@@ -37,15 +37,40 @@ export class PostRepository implements IPostRepository {
     page: number,
     limit: number,
     keyword: string,
-  ): Promise<IPost[]> {
-    return await this.repository.find({
-      take: limit,
-      skip: page * limit,
-      where: [
-        { title: Like(`%${keyword}%`) },
-        { content: Like(`%${keyword}%`) },
-      ],
-    })
+  ): Promise<{ data: IPost[], pagination: { totalItems: number, totalPages: number, currentPage: number } }> {
+    const [data, totalItems] = await Promise.all([
+      this.repository.find({
+        take: limit,
+        skip: page * limit,
+        relations: ['author'],
+        where: [
+          { title: Like(`%${keyword}%`) },
+          { content: Like(`%${keyword}%`) },
+        ],
+      }),
+      this.repository.count({
+        where: [
+          { title: Like(`%${keyword}%`) },
+          { content: Like(`%${keyword}%`) },
+        ],
+      })
+    ])
+      
+    const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    data,
+    pagination: {
+      totalItems,
+      totalPages,
+      currentPage: page
+    }
+  }
+      
+  }
+
+  async getTotalItems(): Promise<number> {
+    return await this.repository.count();
   }
 
   async update(post: IPost): Promise<IPost> {
