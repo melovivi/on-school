@@ -10,4 +10,7 @@ export interface IUserRepository {
 
   findById(id: string): Promise<IUser | null>
   findByEmail(email: string): Promise<IUser | null>
+  findAll(isadmin: boolean, page: number, limit: number): Promise<IUser[]>
+  delete(id: string): Promise<void>
+  update(user: IUser): Promise<IUser>
 }

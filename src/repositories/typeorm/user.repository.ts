@@ -32,4 +32,25 @@ export class UserRepository implements IUserRepository {
       where: { email },
     })
   }
+
+  async findAll(
+    isadmin: boolean,
+    page: number,
+    limit: number,
+  ): Promise<IUser[]> {
+    return await this.repository.find({
+      where: { isadmin },
+      skip: page,
+      take: limit,
+    })
+  }
+
+  async delete(id: UUID): Promise<void> {
+    await this.repository.delete(id)
+  }
+
+  async update(user: IUser): Promise<IUser> {
+    await this.repository.save(user)
+    return user
+  }
 }
