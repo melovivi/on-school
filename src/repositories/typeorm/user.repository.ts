@@ -1,6 +1,6 @@
 import { IUser } from '@/entities/models/user.interface'
 import { IUserRepository } from '../user.repository.interface'
-import { Repository } from 'typeorm'
+import { Like, Repository } from 'typeorm'
 import { User } from '@/entities/user.entity'
 import { appDataSource } from '@/lib/typeorm/typeorm'
 import { UUID } from 'crypto'
@@ -32,6 +32,43 @@ export class UserRepository implements IUserRepository {
       where: { email },
     })
   }
+
+  async searchByWord(
+    page: number,
+    limit: number,
+    keyword: string,
+  ): Promise<{ data: IUser[], pagination: { totalItems: number, totalPages: number, currentPage: number } }> {
+    const [data, totalItems] = await Promise.all([
+      this.repository.find({
+        take: limit,
+        skip: page * limit,
+        relations: ['posts'],
+        where: [
+          { name: Like(`%${keyword}%`) },
+          { email: Like(`%${keyword}%`) }
+        ],
+      }),
+      this.repository.count({
+        where: [
+          { name: Like(`%${keyword}%`) },
+          { email: Like(`%${keyword}%`) }
+        ],
+      })
+    ])
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data,
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page
+      }
+    }
+
+  }
+
 
   async findAll(
     isadmin: boolean,
